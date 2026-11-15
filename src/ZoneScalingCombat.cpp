@@ -231,6 +231,10 @@ bool ZoneScalingMgr::GetViewPool(Creature const* creature, uint8 effective, View
     uint32 const realMax = std::max<uint32>(creature->GetMaxHealth(), 1);
     out.MaxHealth = std::max<uint32>(1, uint32(uint64(realMax) * stats.Health / state->CanonicalStats.Health));
     out.Health    = uint32(uint64(creature->GetHealth()) * out.MaxHealth / realMax);
+    // Never show a creature with health left at 0: the client treats health 0 as death (CGUnit_C::OnDeath), so a
+    // mob held at 1 HP by an invincibility floor (142 real, 84 shown -> 0) played its death and slid home as a corpse.
+    if (!out.Health && creature->GetHealth())
+        out.Health = 1;
 
     out.MaxMana = out.Mana = 0;
     uint32 const realMaxMana = creature->GetMaxPower(POWER_MANA);
